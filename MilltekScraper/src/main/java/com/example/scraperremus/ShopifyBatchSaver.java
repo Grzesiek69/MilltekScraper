@@ -14,7 +14,7 @@ public class ShopifyBatchSaver {
     private static final String PRODUCT_CATEGORY =
             "Pojazdy i części > Akcesoria i części do pojazdów > Części do pojazdów silnikowych > Elementy układu wydechowego";
     private static final String TYPE = "Układ wydechowy";
-    private static final String TAGS = "Milltek, BMW, Układ wydechowy";
+    private static final String TAGS = "Milltek, Układ wydechowy";
     private static final String PUBLISHED = "TRUE";
     private static final String VARIANT_INVENTORY_POLICY = "continue";
     private static final String VARIANT_FULFILLMENT_SERVICE = "manual";
@@ -32,9 +32,9 @@ public class ShopifyBatchSaver {
 
     static {
         translationsTypeOfSystem.put("Cat-back", "Cat-back");
-        translationsTypeOfSystem.put("Particulate Filter-back", "GPF/OPF-back");
+        translationsTypeOfSystem.put("Particulate Filter-back", "GPF-back");
         translationsTypeOfSystem.put("Resonator Bypass", "Resonator Bypass");
-        translationsTypeOfSystem.put("Full System", "Układ wydechowy");
+        translationsTypeOfSystem.put("Full System", "");
         translationsTypeOfSystem.put("Downpipe-back", "Downpipe-back");
         translationsTypeOfSystem.put("Front Pipe-back", "Front Pipe-back");
 
@@ -141,7 +141,7 @@ public class ShopifyBatchSaver {
         // 2. ZESTAW DRUGI
         // -------------------------
 
-        translations.put("Option", "Opcja");
+        translations.put("Option", "Wariant");
         translations.put("System", "Układ");
         translations.put("Race System?", "Układ torowy?");
         translations.put("Valvesonic?", "Valvesonic (z klapami)?");
@@ -325,15 +325,17 @@ public class ShopifyBatchSaver {
 
                 for (int i = 0; i < rows; i++) {
                     boolean firstRow = (i == 0);
-                    String customVariant = (product.getCustomVariant() != null) ? product.getCustomVariant() : "";
+                    String customVariant = firstRow ? (product.getCustomVariant() != null) ? product.getCustomVariant() : "" : "";
+                    String customTypeOfSystem = firstRow ? (product.getCustomTypeOfSystem() != null)
+                            ? translationsTypeOfSystem.getOrDefault(product.getCustomTypeOfSystem(), product.getCustomTypeOfSystem()) : "" : "";
 
                     // Handle w każdym wierszu, aby Shopify wiedział, że to ten sam produkt
                     String handle = product.getHandle();
-                    String goodTitle = "Układ wydechowy Milltek " + product.getCustomTypeOfSystem() + " dla " + product.getCustomMake() + " "
+                    String goodTitle = "Układ wydechowy Milltek " + customTypeOfSystem + " dla " + product.getCustomMake() + " "
                             + product.getCustomModel() + " " + product.getCustomVariant() + " " + product.getCustomYearFrom()
-                            + " " + product.getCustomYearTo();
+                            + " - " + product.getCustomYearTo();
                     // Pola pojawiające się tylko w pierwszym wierszu:
-                    String title = firstRow ? product.getTitle() +"\n" + goodTitle : "";
+                    String title = firstRow ? goodTitle : "";
                     String body = firstRow ? product.getDescription() : "";
                     String vendor = firstRow ? VENDOR : "";
                     String productCategory = firstRow ? PRODUCT_CATEGORY : "";
@@ -403,11 +405,12 @@ public class ShopifyBatchSaver {
                     String status = firstRow ? STATUS : "";
 
                     // Nowe kolumny custom.* i tagi
-                    String customMake = (product.getCustomMake() != null) ? product.getCustomMake() : "";
-                    String customModel = (product.getCustomModel() != null) ? product.getCustomModel() : "";
+                    String customMake = firstRow ?(product.getCustomMake() != null) ? product.getCustomMake() : "" : "";
+                    String customModel = firstRow ? (product.getCustomModel() != null) ? product.getCustomModel() : "" : "";
 //                    String customVariant = (product.getCustomVariant() != null) ? product.getCustomVariant() : "";
-                    String customYearFrom = (product.getCustomYearFrom() != null) ? product.getCustomYearFrom() : "";
-                    String customYearTo = (product.getCustomYearTo() != null) ? product.getCustomYearTo() : "";
+                    String customYearFrom = firstRow ? (product.getCustomYearFrom() != null) ? product.getCustomYearFrom() : "" : "";
+                    String customYearTo = firstRow ? (product.getCustomYearTo() != null) ? product.getCustomYearTo() : "" : "";
+                    // finalnie:
 
                     // Tag - budujemy tylko raz (firstRow). Zawiera też customVariant (o ile niepuste).
                     String tags = "";
@@ -422,11 +425,11 @@ public class ShopifyBatchSaver {
                         if (!customVariant.isEmpty()) {
                             tags += ", " + customVariant;
                         }
+                        if (!customTypeOfSystem.isEmpty()) {
+                            tags += ", " + customTypeOfSystem;
+                        }
                     }
 
-                    // finalnie:
-                    String customTypeOfSystem = (product.getCustomTypeOfSystem() != null)
-                            ? translationsTypeOfSystem.getOrDefault(product.getCustomTypeOfSystem(), product.getCustomTypeOfSystem()) : "";
 
                     // Składamy wiersz CSV
                     StringBuilder row = new StringBuilder();

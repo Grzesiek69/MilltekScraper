@@ -107,7 +107,7 @@ public class ProductScrapperMilltek {
                 }
 
                 ProductMetadata meta = new ProductMetadata(
-                        make, model, variant, yearFrom, yearTo, typeOfSystem, price
+                        make, model, variant, yearFrom.substring(0,4), yearTo.substring(0,4), typeOfSystem, price
                 );
 
                 productMetadataMap
@@ -330,16 +330,16 @@ public class ProductScrapperMilltek {
      *   użyjemy getGenerationCodes(...) w oparciu o customModel i title
      */
     private static void parseTableFromDescription(Product product) {
-        // Zamień opis produktu (HTML) na obiekt Document
+        // Zamiana opisu produktu (HTML) na obiekt Document
         Document descDoc = Jsoup.parse(product.getDescription());
 
-        // Znajdź wszystkie <table> wewnątrz <div class="variant-table-cleaned">
+        // Znalezienie tabeli wewnątrz div.variant-table-cleaned
         Elements tables = descDoc.select("div.variant-table-cleaned table");
         if (tables.isEmpty()) {
             return;
         }
 
-        // Odczyt tabel
+        // Parsowanie wierszy tabeli
         for (Element table : tables) {
             Elements rows = table.select("tr");
             for (Element row : rows) {
@@ -358,11 +358,17 @@ public class ProductScrapperMilltek {
                         product.setCustomModel(val);
                         break;
                     case "Vehicle Variant":
-                        // tu celowo nic nie robimy, bo generacje -> getGenerationCodes
+                        // Celowo pomijamy – ustawiamy generacje na podstawie tytułu i modelu
                         break;
                     case "Type":
                     case "System Type":
                         product.setCustomTypeOfSystem(val);
+                        break;
+                    case "Pipe Size":
+                        product.setCustomPipeSize(val);
+                        break;
+                    case "Fitting Time":
+                        product.setCustomFittingTime(val);
                         break;
                     default:
                         break;
@@ -370,7 +376,7 @@ public class ProductScrapperMilltek {
             }
         }
 
-        // Teraz ustalamy customVariant w oparciu o generacje
+        // Ustalanie customVariant w oparciu o generacje (dla Vehicle Variant)
         if (product.getCustomModel() != null) {
             List<String> genCodes = getGenerationCodes(
                     product.getCustomModel(),
@@ -394,17 +400,17 @@ public class ProductScrapperMilltek {
 
         models.put("A1", Arrays.asList("9Y", "GB"));
         models.put("A2", Arrays.asList("8Z"));
-        models.put("A3", Arrays.asList("8L", "8P", "8V", "8Y"));
+        models.put("A3", Arrays.asList("8L", "8P", "8V", "8Y", "1.8 TSI", "1.9 TDI", "2.0 TDI", "2.0 TFSI", "2.0T FSI", "1.8T", "Sportback"));
         models.put("80", Arrays.asList("B1", "B2", "B3", "B4"));
-        models.put("A4", Arrays.asList("B5", "B6", "B7", "B8", "B9"));
-        models.put("A5", Arrays.asList("B10"));
+        models.put("A4", Arrays.asList("B5", "B6", "B7", "B8", "B9", "1.8 TSI", " 3.0 TDi", "1.9 TDI", "2.0 TDI", "2.0 TFSI", "2.0T FSI", "1.8T"));
+        models.put("A5", Arrays.asList("B10", "1.8 TSI", "1.9 TDI", "2.0 TDI", "2.0 TFSI", "2.0T FSI", "1.8T", "B5", "B6", "B7", "B8", "B9"));
         models.put("100", Arrays.asList("C1", "C2", "C3", "C4"));
         models.put("A6", Arrays.asList("C4", "C5", "C6", "C7", "C8", "C9"));
         models.put("V8", Arrays.asList("4C"));
         models.put("A8", Arrays.asList("D2", "D3", "D4", "D5"));
         models.put("A7", Arrays.asList("4G8", "4G9"));
         models.put("TT", Arrays.asList("8N", "8J", "8S"));
-        models.put("R8", Arrays.asList("42", "4S"));
+        models.put("R8", Arrays.asList("42", "4S", "Gen 2", "Gen 1"));
 
         // Modele Q (SUV-y i crossovery)
         models.put("Q2", Arrays.asList("GA"));
@@ -436,22 +442,20 @@ public class ProductScrapperMilltek {
         models.put("S4", Arrays.asList("B5", "B6", "B7", "B8", "B9"));
         models.put("S5", Arrays.asList("8T", "F5"));
         models.put("S6", Arrays.asList("C4", "C5", "C6", "C7", "C8"));
-        models.put("S7", Arrays.asList("4G8", "4G9"));
-        models.put("S8", Arrays.asList("4C", "4D"));
+        models.put("S7", Arrays.asList("4G8", "4G9", "C4", "C5", "C6", "C7", "C8"));
+        models.put("S8", Arrays.asList("4C", "4D", "D2", "D3", "D4", "D5"));
 
         // Modele RS (wersje wyczynowe)
-        models.put("RS3", Arrays.asList("8L", "8P", "8V", "8Y"));
+        models.put("RS3", Arrays.asList("8L", "8P", "8V", "8Y", "Sportback"));
         models.put("RS4", Arrays.asList("B5", "B7", "B8", "B9"));
         models.put("RS5", Arrays.asList("8T", "F5"));
         models.put("RS6", Arrays.asList("C5", "C6", "C7", "C8"));
-        models.put("RS7", Arrays.asList("4G8", "4G9"));
+        models.put("RS7", Arrays.asList("4G8", "4G9", "C4", "C5", "C6", "C7", "C8"));
 
         // Dodatkowe modele RSQ i SQ (wyczynowe wersje Q)
         models.put("RSQ3", Arrays.asList("8V-RSQ3")); // przykładowe oznaczenie
         models.put("RSQ8", Arrays.asList("4X-RSQ8")); // przykładowe oznaczenie
-        models.put("SQ5", Arrays.asList("8R-SQ5"));   // już dodane powyżej, ale można też dodać jako osobny klucz
-        models.put("SQ7", Arrays.asList("4L-SQ7"));   // przykładowe
-        models.put("SQ8", Arrays.asList("4N-SQ8"));   // przykładowe
+
 
         return models;
     }
@@ -480,26 +484,56 @@ public class ProductScrapperMilltek {
      * zwracając je w postaci HTML, który doklejamy do opisu.
      */
     private static String extractAndCleanVariantTables(Document doc) {
-        Elements variantDivs = doc.select("div.variant-additional-info");
-        StringBuilder sb = new StringBuilder();
-        Set<String> uniqueTables = new LinkedHashSet<>();
+        // Zestaw kluczy, które chcemy zostawić w tabeli:
+        Set<String> allowedKeys = new HashSet<>(Arrays.asList(
+                "Specification",
+                "Vehicle Make",
+                "Vehicle Model",
+                "Vehicle Variant",
+                "Type",
+                "Pipe Size",
+                "Fitting Time",
+                "Tip Style" // jeżeli też chcesz
+        ));
 
-        for (Element div : variantDivs) {
-            Elements tables = div.select("table");
-            if (tables.isEmpty()) continue;
+        // Znajdź pierwszy <div class="variant-additional-info">
+        Element variantDiv = doc.selectFirst("div.variant-additional-info");
+        if (variantDiv == null) {
+            return ""; // brak
+        }
 
-            Element table = tables.first();
-            String cleanedTableHtml = table.outerHtml();
+        // Znajdź pierwszą tabelę w tym div
+        Element table = variantDiv.selectFirst("table");
+        if (table == null) {
+            return ""; // brak
+        }
 
-            if (uniqueTables.add(cleanedTableHtml)) {
-                sb.append("<div class=\"variant-table-cleaned\">")
-                        .append(cleanedTableHtml)
-                        .append("</div>\n");
+        // Klonujemy, żeby nie modyfikować oryginalnego doc
+        Element clonedTable = table.clone();
+
+        // Wycinamy z clonedTable wszystkie wiersze, które nie mają klucza z allowedKeys
+        Elements rows = clonedTable.select("tr");
+        for (Element row : rows) {
+            Element firstCell = row.selectFirst("th, td");
+            if (firstCell == null) {
+                row.remove();
+                continue;
+            }
+            String keyText = firstCell.text().trim();
+            if (!allowedKeys.contains(keyText)) {
+                row.remove();
             }
         }
-        return sb.toString();
-    }
 
+        // Sprawdzamy, czy coś zostało
+        if (!clonedTable.select("tr").isEmpty()) {
+            // Pakujemy w <div class="variant-table-cleaned">
+            return "<div class=\"variant-table-cleaned\">" + clonedTable.outerHtml() + "</div>";
+        } else {
+            // Nie ma żadnych pasujących wierszy
+            return "";
+        }
+    }
     private static String getCellValue(Cell cell) {
         if (cell == null) return "";
         switch (cell.getCellType()) {

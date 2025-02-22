@@ -24,6 +24,10 @@ public class Product {
     private String currency; // e.g. "PLN"
     private String sku;      // base SKU (from first variant)
 
+    // Dodatkowe pola w razie potrzeby
+    private String customPipeSize;
+    private String customFittingTime;
+
     // Option group names, e.g. ["Valved?", "Trims"]
     private List<String> optionNames;
 
@@ -39,7 +43,7 @@ public class Product {
     private String customVariant;
     private String customTypeOfSystem;
 
-    // NOWE 2 POLA:
+    // NOWE 2 POLA dla roczników:
     private String customYearFrom;
     private String customYearTo;
 
