@@ -309,7 +309,15 @@ public class ProductScrapperMilltek {
                 }
             }
             product.setImagesLinks(images);
-
+            CustomVariantData cvData = CustomVariantRepository.findByFields(
+                    product.getCustomMake(),
+                    product.getCustomModel(),
+                    product.getCustomYearFrom(),
+                    product.getCustomYearTo()
+            );
+            if (cvData != null) {
+                product.setCustomVariant(cvData.getVariant());
+            }
             return product;
 
         } catch (Exception e) {

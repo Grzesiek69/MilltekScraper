@@ -304,12 +304,12 @@ public class ShopifyBatchSaver {
                     "Image Position," +              // 24
                     "Gift Card," +                   // 25
                     "Status," +                      // 26
-                    "custom.make," +                 // 27
-                    "custom.model," +                // 28
-                    "custom.variant," +              // 29
-                    "custom.typeOfSystem," +         // 30
-                    "custom.yearFrom," +             // 31
-                    "custom.yearTo"                  // 32
+                    "marka (product.metafields.custom.marka)," +                 // 27
+                    "model (product.metafields.custom.model)," +                // 28
+                    "variant (product.metafields.custom.variant)," +              // 29
+                    "typeofsystem (product.metafields.custom.typeofsystem)," +         // 30
+                    "yearFrom (product.metafields.custom.yearFrom)," +             // 31
+                    "yearTo (product.metafields.custom.yearto),"                  // 32
             );
 
             for (Product product : products) {
